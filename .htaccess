@@ -1,0 +1,38 @@
+# Disable directory browsing
+Options -Indexes
+
+# Set the Rewrite Engine On
+RewriteEngine On
+
+# Redirect all requests to the public directory
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^(.*)$ /public/$1 [L]
+
+# Redirect all requests to index.php within the public directory
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]
+
+# Protect sensitive files
+<FilesMatch "^.*\.(env|htaccess|git|gitignore|gitmodules|idea|project|vscode)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Block access to specific files
+<FilesMatch "^(\.env|\.git|\.gitignore|\.htaccess|\.env\.backup|\.env\.old)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Protect application and configuration files
+<FilesMatch "^(app|config|database|resources|routes|storage|tests|vendor)/.*$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Allow access to the assets directory
+<FilesMatch "^public/(css|js|images|fonts)/.*$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
