@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\Account;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -30,14 +33,28 @@ class AuthController extends Controller
     }
     public function register(RegisterRequest $registerRequest)
     {
-        $user = User::create([
-            'name' => $registerRequest->name,
-            'email' => $registerRequest->email,
-            'username' => $registerRequest->username,
-            'password' => $registerRequest->password
-        ]);
-        $token = $user->createToken('AuthToken')->accessToken;
-        return $this->jsonResponse(message: 'Registration Successful', data: ['user' => $user, 'token' => $token]);
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                'name' => $registerRequest->name,
+                'email' => $registerRequest->email,
+                'username' => $registerRequest->username,
+                'password' => $registerRequest->password
+            ]);
+            $openingBalanceAccount = Account::create([
+                'name' => $user->username . '-OpeningBalance',
+                'account_group_id' => 4,
+                'user_id' => $user->id
+            ]);
+            $user->update(['opening_balance_account_id' => $openingBalanceAccount->id]);
+            $token = $user->createToken('AuthToken')->accessToken;
+            DB::commit();
+            return $this->jsonResponse(message: 'Registration Successful', data: ['user' => $user, 'token' => $token]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th);
+            return $this->jsonResponse(message: __('errors.general_error'), status: 500);
+        }
     }
     public function logout()
     {
