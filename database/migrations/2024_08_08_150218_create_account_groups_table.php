@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('code')->unique();
-            $table->char('drcr')->default('dr')->index();
             $table->timestamps();
             $table->tinyInteger('status')->default(1)->index();
         });
