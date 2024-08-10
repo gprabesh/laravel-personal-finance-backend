@@ -24,7 +24,7 @@ class AuthController extends Controller
         }
         if (!Auth::guard('web')->attempt(["$identifierColumn" => $usernameOrEmail, 'password' => $password])) {
             throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
+                'usernameOrEmail' => __('auth.failed'),
             ]);
         }
         $user = User::where($identifierColumn, $usernameOrEmail)->first();
