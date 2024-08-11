@@ -26,5 +26,6 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
         Model::unguard();
+        Model::preventLazyLoading();
     }
 }

@@ -41,14 +41,22 @@ class AuthController extends Controller
                 'username' => $registerRequest->username,
                 'password' => $registerRequest->password
             ]);
-            $openingBalanceAccount = Account::create([
-                'name' => $user->username . '-OpeningBalance',
-                'account_group_id' => 4,
-            ]);
-            $transferChargeAccount = Account::create([
-                'name' => $user->username . '-TransferCharge',
-                'account_group_id' => 4,
-            ]);
+            $openingBalanceAccount = Account::withoutEvents(function () use ($user) {
+                $account = Account::create([
+                    'name' => $user->username . '-OpeningBalance',
+                    'account_group_id' => 4,
+                    'user_id' => $user->id,
+                ]);
+                return $account;
+            });
+            $transferChargeAccount = Account::withoutEvents(function () use ($user) {
+                $account = Account::create([
+                    'name' => $user->username . '-TransferCharge',
+                    'account_group_id' => 4,
+                    'user_id' => $user->id,
+                ]);
+                return $account;
+            });
             $user->update(['opening_balance_account_id' => $openingBalanceAccount->id, 'transfer_charge_account_id' => $transferChargeAccount->id]);
             $token = $user->createToken('AuthToken')->accessToken;
             DB::commit();
