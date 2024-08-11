@@ -21,7 +21,7 @@ class TransactionRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $validationArray = [
             "description" => "required|string",
             "amount" => "required|numeric",
             "transaction_type_id" => "required|exists:transaction_types,id",
@@ -34,5 +34,9 @@ class TransactionRequest extends FormRequest
             "people" => "nullable|array",
             "people.*" => "exists:people,id"
         ];
+        if ($this->method() != 'POST') {
+            $validationArray["transactionDetails.*.id"] = "required|exists:transaction_details,id";
+        }
+        return $validationArray;
     }
 }

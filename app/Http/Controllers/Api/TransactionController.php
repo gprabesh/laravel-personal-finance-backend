@@ -101,7 +101,37 @@ class TransactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(TransactionRequest $transactionRequest, Transaction $transaction) {}
+    public function update(TransactionRequest $transactionRequest, Transaction $transaction)
+    {
+        DB::beginTransaction();
+        try {
+            $transaction->description = $transactionRequest->description;
+            $transaction->location_id = $transactionRequest->location_id ?? null;
+            $transaction->save();
+            $transaction->people()->sync($transactionRequest->people);
+            $amount = 0;
+            foreach ($transactionRequest->transactionDetails as $key => $value) {
+                $transactionDetail = TransactionDetail::find($value['id']);
+                $transactionDetail->debit = $value['debit'];
+                $transactionDetail->credit = $value['credit'];
+                $transactionDetail->save();
+                $this->accountService->recalculateBalance($transactionDetail);
+                $amount += $transactionDetail->debit;
+            }
+            $transaction->amount = $amount;
+            $transaction->update();
+            DB::commit();
+            return $this->jsonResponse(message: 'Transaction updated');
+        } catch (CustomException $ce) {
+            DB::rollBack();
+            Log::error($ce);
+            return $this->jsonResponse(message: $ce->getMessage(), status: 400);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th);
+            return $this->jsonResponse(message: 'Failed to save transaction', status: 500);
+        }
+    }
 
     /**
      * Remove the specified resource from storage.
