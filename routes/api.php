@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AccountController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommonController;
+use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\PeopleController;
 use App\Http\Controllers\Api\TransactionController;
 
 Route::prefix('auth')->group(function () {
@@ -20,4 +22,6 @@ Route::middleware('auth:api')->group(function () {
     });
     Route::resource('accounts', AccountController::class);
     Route::resource('transactions', TransactionController::class);
+    Route::resource('locations', LocationController::class);
+    Route::resource('people', PeopleController::class);
 });
