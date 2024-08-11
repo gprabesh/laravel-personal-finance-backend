@@ -14,6 +14,9 @@ class Transaction extends Model
         static::addGlobalScope('forUser', function (Builder $builder) {
             $builder->where('user_id', auth()->id());
         });
+        static::creating(function (Transaction $transaction) {
+            $transaction->user_id = auth()->id();
+        });
     }
 
     public function user()

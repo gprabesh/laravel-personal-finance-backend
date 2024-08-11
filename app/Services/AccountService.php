@@ -32,7 +32,7 @@ class AccountService
             }
         }
         $transactionDetail->update();
-        Account::where('id', $transactionDetail->account_id)->update([
+        Account::withoutGlobalScopes()->where('id', $transactionDetail->account_id)->update([
             'current_balance' => abs($balance),
             'current_balance_type' => $balance < 0 ? 'CR' : 'DR',
             'needs_balance_recalculation' => 0,

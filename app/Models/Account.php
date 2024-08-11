@@ -15,6 +15,9 @@ class Account extends Model
         static::addGlobalScope('forUser', function (Builder $builder) {
             $builder->where('user_id', auth()->id())->where('id', '<>', auth()->user()->opening_balance_account_id);
         });
+        static::creating(function (Account $account) {
+            $account->user_id = auth()->id();
+        });
     }
 
     public function user()

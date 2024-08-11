@@ -16,6 +16,14 @@ use Illuminate\Support\Facades\Log;
 
 class AccountController extends Controller
 {
+
+    private $accountService;
+
+    public function __construct(AccountService $accountService)
+    {
+        $this->accountService = $accountService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -44,7 +52,6 @@ class AccountController extends Controller
             $account = new Account();
             $account->name = $request->name;
             $account->account_group_id = $request->account_group_id;
-            $account->user_id = $user->id;
             $account->current_balance = abs($request->opening_balance) ?? 0;
             $account->save();
             if ($account->account_group_id == 3) { //Assets/Wallets
@@ -55,15 +62,12 @@ class AccountController extends Controller
                 $transaction = new Transaction();
                 $transaction->description = 'Opening Balance';
                 $transaction->amount = abs($request->opening_balance) ?? 0;
-                $transaction->user_id = $user->id;
                 $transaction->transaction_type_id = 8; //Opening Balance
                 $transaction->save();
                 $debitTransaction = new TransactionDetail();
                 $debitTransaction->debit = $transaction->amount;
-                $debitTransaction->user_id = $user->id;
                 $creditTransaction = new TransactionDetail();
                 $creditTransaction->credit = $transaction->amount;
-                $creditTransaction->user_id = $user->id;
                 $debitTransaction->transaction_id = $transaction->id;
                 $creditTransaction->transaction_id = $transaction->id;
                 if ($request->opening_balance >= 0) {
@@ -146,7 +150,7 @@ class AccountController extends Controller
                         $account->needs_balance_recalculation = 1;
                         $account->update();
                         $value->update();
-                        (new AccountService())->recalculateBalance($value);
+                        $this->accountService->recalculateBalance($value);
                     }
                 }
             }

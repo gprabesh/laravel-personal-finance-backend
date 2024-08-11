@@ -44,9 +44,12 @@ class AuthController extends Controller
             $openingBalanceAccount = Account::create([
                 'name' => $user->username . '-OpeningBalance',
                 'account_group_id' => 4,
-                'user_id' => $user->id
             ]);
-            $user->update(['opening_balance_account_id' => $openingBalanceAccount->id]);
+            $transferChargeAccount = Account::create([
+                'name' => $user->username . '-TransferCharge',
+                'account_group_id' => 4,
+            ]);
+            $user->update(['opening_balance_account_id' => $openingBalanceAccount->id, 'transfer_charge_account_id' => $transferChargeAccount->id]);
             $token = $user->createToken('AuthToken')->accessToken;
             DB::commit();
             return $this->jsonResponse(message: 'Registration Successful', data: ['user' => $user, 'token' => $token]);
