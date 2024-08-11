@@ -13,12 +13,11 @@ abstract class Controller
      * @param  array  $errors
      * @return \Illuminate\Http\JsonResponse
      */
-    public function jsonResponse($status = 200, $message = '', $data = [], $errors = [])
+    public function jsonResponse($status = 200, $message = '', $data = [])
     {
         return response()->json([
-            'message' => $message,
+            'message' => $message ? $message : __('success.data_fetched'),
             'data' => $data,
-            'errors' => $errors,
         ], $status);
     }
 }

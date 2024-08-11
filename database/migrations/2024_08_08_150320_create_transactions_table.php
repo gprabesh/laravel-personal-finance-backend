@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('amount')->default(0);
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('transaction_type_id')->constrained('transaction_types');
-            $table->foreignId('location_id')->constrained('locations');
+            $table->foreignId('location_id')->nullable()->constrained('locations');
             $table->foreignId('parent_id')->nullable()->constrained('transactions')->onDelete('SET NULL');
             $table->timestamps();
             $table->tinyInteger('status')->default(1)->index();

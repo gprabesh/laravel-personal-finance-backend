@@ -13,33 +13,45 @@ class TransactionTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        TransactionType::create([
+        TransactionType::updateOrCreate([
+            'id' => 1,
             'name' => 'Receipt',
             'code' => 'R',
         ]);
-        TransactionType::create([
+        TransactionType::updateOrCreate([
+            'id' => 2,
             'name' => 'Payment',
             'code' => 'P',
         ]);
-        TransactionType::create([
+        TransactionType::updateOrCreate([
+            'id' => 3,
             'name' => 'Transfer',
             'code' => 'TF',
         ]);
-        TransactionType::create([
+        TransactionType::updateOrCreate([
+            'id' => 4,
             'name' => 'Debt',
             'code' => 'DB',
         ]);
-        TransactionType::create([
+        TransactionType::updateOrCreate([
+            'id' => 5,
             'name' => 'Credit',
             'code' => 'CR',
         ]);
-        TransactionType::create([
+        TransactionType::updateOrCreate([
+            'id' => 6,
             'name' => 'Debt Paid',
             'code' => 'DBP',
         ]);
-        TransactionType::create([
+        TransactionType::updateOrCreate([
+            'id' => 7,
             'name' => 'Credit Received',
             'code' => 'CRR',
+        ]);
+        TransactionType::updateOrCreate([
+            'id' => 8,
+            'name' => 'Opening Balance',
+            'code' => 'OB',
         ]);
     }
 }

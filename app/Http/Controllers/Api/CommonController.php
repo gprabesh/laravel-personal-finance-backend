@@ -12,11 +12,11 @@ class CommonController extends Controller
     public function getAccountGroups()
     {
         $accountGroups = AccountGroup::where('status', 1)->get();
-        return $this->jsonResponse(message: __('success.data_fetched'), data: ['accountGroups' => $accountGroups]);
+        return $this->jsonResponse(data: ['accountGroups' => $accountGroups]);
     }
     public function getTransactionTypes()
     {
         $transactionTypes = TransactionType::where('status', 1)->get();
-        return $this->jsonResponse(message: __('success.data_fetched'), data: ['transactionTypes' => $transactionTypes]);
+        return $this->jsonResponse(data: ['transactionTypes' => $transactionTypes]);
     }
 }

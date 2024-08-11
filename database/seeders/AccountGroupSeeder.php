@@ -13,19 +13,23 @@ class AccountGroupSeeder extends Seeder
      */
     public function run(): void
     {
-        AccountGroup::create([
+        AccountGroup::updateOrCreate([
+            'id' => 1,
             'name' => 'Income',
             'code' => 'INC',
         ]);
-        AccountGroup::create([
+        AccountGroup::updateOrCreate([
+            'id' => 2,
             'name' => 'Expense',
             'code' => 'EXP',
         ]);
-        AccountGroup::create([
+        AccountGroup::updateOrCreate([
+            'id' => 3,
             'name' => 'Assets',
             'code' => 'AST',
         ]);
-        AccountGroup::create([
+        AccountGroup::updateOrCreate([
+            'id' => 4,
             'name' => 'System',
             'code' => 'SYS',
         ]);

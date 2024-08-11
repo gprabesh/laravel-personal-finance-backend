@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AccountController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommonController;
@@ -16,4 +17,5 @@ Route::middleware('auth:api')->group(function () {
         Route::get('account-groups', [CommonController::class, 'getAccountGroups']);
         Route::get('transaction-types', [CommonController::class, 'getTransactionTypes']);
     });
+    Route::resource('accounts', AccountController::class);
 });

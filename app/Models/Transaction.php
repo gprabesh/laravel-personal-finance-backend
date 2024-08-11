@@ -2,12 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Transaction extends Model
 {
     use HasFactory;
+    protected static function booted(): void
+    {
+        static::addGlobalScope('forUser', function (Builder $builder) {
+            $builder->where('user_id', auth()->id());
+        });
+    }
 
     public function user()
     {
@@ -32,5 +39,10 @@ class Transaction extends Model
     public function people()
     {
         return $this->belongsToMany(People::class, 'pivot_transactions_people', 'transaction_id', 'people_id');
+    }
+
+    public function transactionDetails()
+    {
+        return $this->hasMany(TransactionDetail::class);
     }
 }
