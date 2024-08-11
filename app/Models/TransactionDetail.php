@@ -10,6 +10,15 @@ class TransactionDetail extends Model
 {
     use HasFactory;
 
+    protected function casts(): array
+    {
+        return [
+            'debit' => 'double',
+            'credit' => 'double',
+            'account_balance' => 'double',
+        ];
+    }
+
     protected static function booted(): void
     {
         static::addGlobalScope('forUser', function (Builder $builder) {

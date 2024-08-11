@@ -9,6 +9,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Transaction extends Model
 {
     use HasFactory;
+
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'double',
+        ];
+    }
+
     protected static function booted(): void
     {
         static::addGlobalScope('forUser', function (Builder $builder) {

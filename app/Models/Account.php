@@ -10,6 +10,13 @@ class Account extends Model
 {
     use HasFactory;
 
+    protected function casts(): array
+    {
+        return [
+            'current_balance' => 'double',
+        ];
+    }
+
     protected static function booted(): void
     {
         static::addGlobalScope('forUser', function (Builder $builder) {
