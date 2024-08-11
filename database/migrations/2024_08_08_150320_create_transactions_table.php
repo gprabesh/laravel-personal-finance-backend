@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->string('description');
-            $table->decimal('amount')->default(0);
+            $table->decimal('amount', 11, 2)->default(0);
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('transaction_type_id')->constrained('transaction_types');
             $table->foreignId('location_id')->nullable()->constrained('locations');

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->double('current_balance')->default(0);
+            $table->decimal('current_balance', 11, 2)->default(0);
             $table->char('current_balance_type', 2)->default('DR');
             $table->tinyInteger('needs_balance_recalculation')->default(0)->index();
             $table->foreignId('user_id')->constrained('users');

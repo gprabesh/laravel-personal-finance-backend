@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('transaction_details', function (Blueprint $table) {
             $table->id();
-            $table->decimal('debit')->default(0);
-            $table->decimal('credit')->default(0);
+            $table->decimal('debit', 11, 2)->default(0);
+            $table->decimal('credit', 11, 2)->default(0);
             $table->foreignId('account_id')->constrained('accounts');
-            $table->decimal('account_balance')->default(0);
+            $table->decimal('account_balance', 11, 2)->default(0);
             $table->char('account_balance_type', 2)->default('DR')->index();
             $table->foreignId('transaction_id')->constrained('transactions');
             $table->foreignId('user_id')->constrained('users');

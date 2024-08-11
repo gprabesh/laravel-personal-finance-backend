@@ -79,6 +79,8 @@ class AccountController extends Controller
                 }
                 $debitTransaction->save();
                 $creditTransaction->save();
+                $this->accountService->recalculateBalance($debitTransaction);
+                $this->accountService->recalculateBalance($creditTransaction);
             }
             DB::commit();
             return $this->jsonResponse(message: 'Account created successfully');
