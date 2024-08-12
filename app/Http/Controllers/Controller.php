@@ -15,9 +15,7 @@ abstract class Controller
      */
     public function jsonResponse($status = 200, $message = '', $data = [])
     {
-        return response()->json([
-            'message' => $message ? $message : __('success.data_fetched'),
-            'data' => $data,
-        ], $status);
+        $data['message'] = $message ? $message : __('success.data_fetched');
+        return response()->json($data, $status);
     }
 }
