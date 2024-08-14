@@ -27,10 +27,10 @@ class TransactionController extends Controller
      */
     public function index(Request $request)
     {
-        $transactions = TransactionDetail::with('transaction', 'account', 'transaction.transactionType')->when(isset($request->account_id) && $request->account_id > 0, function ($query) use ($request) {
+        $transactionDetails = TransactionDetail::with('transaction', 'account', 'transaction.transactionType')->when(isset($request->account_id) && $request->account_id > 0, function ($query) use ($request) {
             return $query->where('account_id', '=', $request->account_id);
-        })->where('account_id', '<>', auth()->user()->opening_balance_account_id)->paginate(100);
-        return $this->jsonResponse(data: ['transactions' => $transactions]);
+        })->where('account_id', '<>', auth()->user()->opening_balance_account_id)->orderBy('id', 'desc')->paginate(100);
+        return $this->jsonResponse(data: ['transactionDetails' => $transactionDetails]);
     }
 
     /**

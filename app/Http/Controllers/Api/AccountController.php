@@ -27,9 +27,14 @@ class AccountController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $accounts = Account::all();
+        $accounts = Account::query();
+        if (isset($request->account_group_id) && count($request->account_group_id) > 0) {
+            $accounts = $accounts->whereIn('account_group_id', $request->account_group_id);
+        }
+        $accounts = $accounts->get();
+
         return $this->jsonResponse(data: ['accounts' => $accounts]);
     }
 
