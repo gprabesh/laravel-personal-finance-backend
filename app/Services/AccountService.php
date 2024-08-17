@@ -11,8 +11,8 @@ class AccountService
     public function recalculateBalance(TransactionDetail $transactionDetail)
     {
         $balance = 0;
-        $previous_transaction = TransactionDetail::where('id', '<', $transactionDetail->id)->where('account_id', $transactionDetail->account_id)->latest()->first();
-        $after_transactions = TransactionDetail::where('id', '>', $transactionDetail->id)->where('account_id', $transactionDetail->account_id)->get();
+        $previous_transaction = TransactionDetail::where('transaction_date', '<', $transactionDetail->transaction_date)->where('account_id', $transactionDetail->account_id)->latest('transaction_date')->first();
+        $after_transactions = TransactionDetail::where('transaction_date', '>', $transactionDetail->transaction_date)->where('account_id', $transactionDetail->account_id)->get();
         if (!$previous_transaction) {
             $balance = $transactionDetail->debit - $transactionDetail->credit;
             $transactionDetail->account_balance = abs($balance);

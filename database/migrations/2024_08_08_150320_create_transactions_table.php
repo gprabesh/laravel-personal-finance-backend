@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->string('description');
+            $table->timestamp('transaction_date')->useCurrent()->index();
             $table->decimal('amount', 11, 2)->default(0);
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('transaction_type_id')->constrained('transaction_types');

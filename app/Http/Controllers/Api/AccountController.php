@@ -53,6 +53,7 @@ class AccountController extends Controller
     {
         DB::beginTransaction();
         try {
+            $transactionDate = now();
             $user = Auth::user();
             $account = new Account();
             $account->name = $request->name;
@@ -67,12 +68,15 @@ class AccountController extends Controller
                 $transaction = new Transaction();
                 $transaction->description = 'Opening Balance';
                 $transaction->amount = abs($request->opening_balance) ?? 0;
+                $transaction->transaction_date = $transactionDate;
                 $transaction->transaction_type_id = 8; //Opening Balance
                 $transaction->save();
                 $debitTransaction = new TransactionDetail();
                 $debitTransaction->debit = $transaction->amount;
+                $debitTransaction->transaction_date = $transactionDate;
                 $creditTransaction = new TransactionDetail();
                 $creditTransaction->credit = $transaction->amount;
+                $creditTransaction->transaction_date = $transactionDate;
                 $debitTransaction->transaction_id = $transaction->id;
                 $creditTransaction->transaction_id = $transaction->id;
                 if ($request->opening_balance >= 0) {

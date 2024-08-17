@@ -29,7 +29,7 @@ class TransactionController extends Controller
     {
         $transactionDetails = TransactionDetail::with('transaction', 'account', 'transaction.transactionType')->when(isset($request->account_id) && $request->account_id > 0, function ($query) use ($request) {
             return $query->where('account_id', '=', $request->account_id);
-        })->where('account_id', '<>', auth()->user()->opening_balance_account_id)->orderBy('id', 'desc')->paginate(100);
+        })->where('account_id', '<>', auth()->user()->opening_balance_account_id)->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->paginate(100);
         return $this->jsonResponse(data: ['transactionDetails' => $transactionDetails]);
     }
 
@@ -48,9 +48,11 @@ class TransactionController extends Controller
     {
         DB::beginTransaction();
         try {
+            $transactionDate = $transactionRequest->transaction_date ?? now();
             $transaction = new Transaction();
             $transaction->description = $transactionRequest->description;
             $transaction->transaction_type_id = $transactionRequest->transaction_type_id;
+            $transaction->transaction_date = $transactionDate;
             $transaction->location_id = $transactionRequest->location_id ?? null;
             $transaction->parent_id = $transactionRequest->parent_id ?? null;
             $transaction->save();
@@ -59,6 +61,7 @@ class TransactionController extends Controller
 
             foreach ($transactionRequest->transactionDetails as $key => $value) {
                 $transactionDetail = new TransactionDetail();
+                $transactionDetail->transaction_date = $transactionDate;
                 $transactionDetail->account_id = $value['account_id'];
                 $transactionDetail->debit = $value['debit'];
                 $transactionDetail->credit = $value['credit'];
@@ -105,13 +108,16 @@ class TransactionController extends Controller
     {
         DB::beginTransaction();
         try {
+            $transactionDate = isset($transactionRequest->transaction_date) ? $transactionRequest->transaction_date : $transaction->transaction_date;
             $transaction->description = $transactionRequest->description;
+            $transaction->transaction_date = $transactionDate;
             $transaction->location_id = $transactionRequest->location_id ?? null;
             $transaction->save();
             $transaction->people()->sync($transactionRequest->people);
             $amount = 0;
             foreach ($transactionRequest->transactionDetails as $key => $value) {
                 $transactionDetail = TransactionDetail::find($value['id']);
+                $transactionDetail->transaction_date = $transactionDate;
                 $transactionDetail->debit = $value['debit'];
                 $transactionDetail->credit = $value['credit'];
                 $transactionDetail->save();

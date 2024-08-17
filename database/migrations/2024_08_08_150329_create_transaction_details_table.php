@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->decimal('debit', 11, 2)->default(0);
             $table->decimal('credit', 11, 2)->default(0);
+            $table->timestamp('transaction_date')->useCurrent()->index();
             $table->foreignId('account_id')->constrained('accounts');
             $table->decimal('account_balance', 11, 2)->default(0);
             $table->char('account_balance_type', 2)->default('DR')->index();
