@@ -130,6 +130,7 @@ class AccountController extends Controller
             if ($account->account_group_id == 3) { //Assets/Wallets
                 $transactionDetail = DB::table('transaction_details as td')->select('t.id')->join('transactions as t', 't.id', '=', 'td.transaction_id')->where('account_id', $account->id)->where('t.transaction_type_id', 8)->first();
                 $openingBalanceTransaction = Transaction::with('transactionDetails')->find($transactionDetail->id);
+                $transactionAmount = 0;
                 foreach ($openingBalanceTransaction->transactionDetails as $key => $value) {
                     if (abs($request->opening_balance) == 0) {
                         $value->debit = 0;
@@ -153,6 +154,7 @@ class AccountController extends Controller
                             }
                         }
                     }
+                    $transactionAmount += $value->debit;
                     if ($value->isDirty()) {
                         $account->needs_balance_recalculation = 1;
                         $account->update();
@@ -160,6 +162,7 @@ class AccountController extends Controller
                         $this->accountService->recalculateBalance($value);
                     }
                 }
+                $openingBalanceTransaction->update(['amount' => $transactionAmount]);
             }
             $account->update();
             DB::commit();
