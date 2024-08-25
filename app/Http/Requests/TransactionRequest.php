@@ -23,20 +23,17 @@ class TransactionRequest extends FormRequest
     {
         $validationArray = [
             "description" => "required|string",
+            "transaction_date" => "nullable|date",
             "amount" => "required|numeric",
+            "charge" => "required|numeric",
+            "account_id" => "required|numeric|exists:accounts,id",
+            "wallet_id" => "required|numeric|exists:accounts,id",
             "transaction_type_id" => "required|exists:transaction_types,id",
             "location_id" => "nullable|exists:locations,id",
             "parent_id" => "nullable|exists:transactions,id",
-            "transactionDetails" => "required|array|min:3|max:3",
-            "transactionDetails.*.account_id" => "exists:accounts,id",
-            "transactionDetails.*.debit" => "numeric",
-            "transactionDetails.*.credit" => "numeric",
             "people" => "nullable|array",
             "people.*" => "exists:people,id"
         ];
-        if ($this->method() != 'POST') {
-            $validationArray["transactionDetails.*.id"] = "required|exists:transaction_details,id";
-        }
         return $validationArray;
     }
 }

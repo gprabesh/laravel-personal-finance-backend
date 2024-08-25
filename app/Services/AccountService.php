@@ -38,4 +38,32 @@ class AccountService
             'needs_balance_recalculation' => 0,
         ]);
     }
+    public function getDebitCreditAmounts(TransactionDetail $transactionDetail, $amount, $transaction_type_id)
+    {
+        if ($transactionDetail->account_id == auth()->user()->transfer_charge_account_id) {
+            $transactionDetail->debit = $amount;
+            $transactionDetail->credit = 0;
+        } else {
+            if (in_array($transaction_type_id, [1, 4, 7])) {
+                if ($transactionDetail->account->account_group_id == 3) {
+                    $transactionDetail->debit = $amount;
+                    $transactionDetail->credit = 0;
+                } else {
+                    $transactionDetail->credit = $amount;
+                    $transactionDetail->debit = 0;
+                }
+            } elseif (in_array($transaction_type_id, [2, 5, 6])) {
+                if ($transactionDetail->account->account_group_id == 3) {
+                    $transactionDetail->credit = $amount;
+                    $transactionDetail->debit = 0;
+                } else {
+                    $transactionDetail->debit = $amount;
+                    $transactionDetail->credit = 0;
+                }
+            }
+        }
+        if ($transactionDetail->isDirty()) {
+            $transactionDetail->update();
+        }
+    }
 }

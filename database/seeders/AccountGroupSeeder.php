@@ -25,8 +25,8 @@ class AccountGroupSeeder extends Seeder
         ]);
         AccountGroup::updateOrCreate([
             'id' => 3,
-            'name' => 'Assets',
-            'code' => 'AST',
+            'name' => 'Wallets',
+            'code' => 'WLT',
         ]);
         AccountGroup::updateOrCreate([
             'id' => 4,

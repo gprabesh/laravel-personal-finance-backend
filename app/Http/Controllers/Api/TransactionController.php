@@ -27,9 +27,24 @@ class TransactionController extends Controller
      */
     public function index(Request $request)
     {
-        $transactionDetails = TransactionDetail::with('transaction', 'account', 'transaction.transactionType')->when(isset($request->account_id) && $request->account_id > 0, function ($query) use ($request) {
-            return $query->where('account_id', '=', $request->account_id);
-        })->where('account_id', '<>', auth()->user()->opening_balance_account_id)->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->paginate(100);
+        $transactionDetails = TransactionDetail::with(['transaction', 'account', 'transaction.transactionType'])
+            ->whereHas('account', function ($query) use ($request) {
+                if (isset($request->accountIds) && count($request->accountIds) > 0) {
+                    $query->whereIn('id', $request->accountIds);
+                }
+                if (isset($request->accountGroupIds) && count($request->accountGroupIds) > 0) {
+                    $query->whereIn('account_group_id', $request->accountGroupIds);
+                }
+            })
+            ->whereHas('transaction.transactionType', function ($query) use ($request) {
+
+                if (isset($request->transactionTypeIds) && count($request->transactionTypeIds) > 0) {
+                    $query->whereIn('id', $request->transactionTypeIds);
+                }
+            })
+            ->when(isset($request->account_id) && $request->account_id > 0, function ($query) use ($request) {
+                return $query->where('account_id', '=', $request->account_id);
+            })->whereNotIn('account_id', [auth()->user()->opening_balance_account_id, auth()->user()->transfer_charge_account_id])->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->paginate(100);
         return $this->jsonResponse(data: ['transactionDetails' => $transactionDetails]);
     }
 
@@ -56,20 +71,36 @@ class TransactionController extends Controller
             $transaction->location_id = $transactionRequest->location_id ?? null;
             $transaction->parent_id = $transactionRequest->parent_id ?? null;
             $transaction->save();
-            $transaction->people()->sync($transactionRequest->people);
+            $transaction->people()->sync($transactionRequest->people ?? []);
             $amount = 0;
 
-            foreach ($transactionRequest->transactionDetails as $key => $value) {
-                $transactionDetail = new TransactionDetail();
-                $transactionDetail->transaction_date = $transactionDate;
-                $transactionDetail->account_id = $value['account_id'];
-                $transactionDetail->debit = $value['debit'];
-                $transactionDetail->credit = $value['credit'];
-                $transactionDetail->transaction_id = $transaction->id;
-                $transactionDetail->save();
-                $this->accountService->recalculateBalance($transactionDetail);
-                $amount += $transactionDetail->debit;
-            }
+            $accountTransactionDetail = new TransactionDetail();
+            $accountTransactionDetail->transaction_date = $transactionDate;
+            $accountTransactionDetail->account_id = $transactionRequest->account_id;
+            $accountTransactionDetail->transaction_id = $transaction->id;
+            $accountTransactionDetail->save();
+            $this->accountService->getDebitCreditAmounts($accountTransactionDetail, $transactionRequest->amount, $transactionRequest->transaction_type_id);
+            $this->accountService->recalculateBalance($accountTransactionDetail);
+            $amount += $accountTransactionDetail->debit;
+
+            $chargeTransactionDetail = new TransactionDetail();
+            $chargeTransactionDetail->transaction_date = $transactionDate;
+            $chargeTransactionDetail->account_id = auth()->user()->transfer_charge_account_id;
+            $chargeTransactionDetail->transaction_id = $transaction->id;
+            $chargeTransactionDetail->save();
+            $this->accountService->getDebitCreditAmounts($chargeTransactionDetail, $transactionRequest->charge, $transactionRequest->transaction_type_id);
+            $this->accountService->recalculateBalance($chargeTransactionDetail);
+            $amount += $chargeTransactionDetail->debit;
+
+            $walletTransactionDetail = new TransactionDetail();
+            $walletTransactionDetail->transaction_date = $transactionDate;
+            $walletTransactionDetail->account_id = $transactionRequest->wallet_id;
+            $walletTransactionDetail->transaction_id = $transaction->id;
+            $walletTransactionDetail->save();
+            $this->accountService->getDebitCreditAmounts($walletTransactionDetail, $transactionRequest->amount + $transactionRequest->charge, $transactionRequest->transaction_type_id);
+            $this->accountService->recalculateBalance($walletTransactionDetail);
+            $amount += $walletTransactionDetail->debit;
+
             $transaction->amount = $amount;
             $transaction->update();
             DB::commit();
