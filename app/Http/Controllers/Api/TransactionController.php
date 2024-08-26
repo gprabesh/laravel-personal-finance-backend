@@ -11,7 +11,7 @@ use App\Exceptions\CustomException;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TransactionRequest;
-use Illuminate\Support\Facades\Auth;
+use stdClass;
 
 class TransactionController extends Controller
 {
@@ -127,9 +127,33 @@ class TransactionController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Transaction $transaction)
+    public function edit($transactionId)
     {
-        //
+        $transaction = Transaction::with('transactionDetails', 'transactionDetails.account')->find($transactionId);
+        $transactionDto = new stdClass;
+        $transactionDto->description = $transaction->description;
+        $transactionDto->transaction_date = $transaction->transaction_date;
+        $transactionDto->location_id = $transaction->location_id;
+        $transactionDto->people = [];
+        $transactionDto->transaction_type_id = $transaction->transaction_type_id;
+        $charge = 0;
+        $amount = 0;
+        foreach ($transaction->transactionDetails as $key => $value) {
+            if ($value->account_id == auth()->user()->transfer_charge_account_id) {
+                $charge = abs($value->debit - $value->credit);
+            } elseif ($value->account->account_group_id == 3) {
+                $transactionDto->wallet_id = $value->account_id;
+            } else {
+                $transactionDto->account_id = $value->account_id;
+                $amount = abs($value->debit - $value->credit);
+            }
+        }
+        $transactionDto->amount = $amount;
+        $transactionDto->charge = $charge;
+        foreach ($transaction->people as $key1 => $value1) {
+            $transactionDto->people[] = $value1->id;
+        }
+        return $this->jsonResponse(message: 'Transaction fetched', data: ['transaction' => $transactionDto]);
     }
 
     /**
