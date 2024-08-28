@@ -41,8 +41,7 @@ class AccountService
     public function getDebitCreditAmounts(TransactionDetail $transactionDetail, $amount, $transaction_type_id)
     {
         if ($transactionDetail->account_id == auth()->user()->transfer_charge_account_id) {
-            $transactionDetail->debit = $amount;
-            $transactionDetail->credit = 0;
+            $transactionDetail->debit = in_array($transaction_type_id, [2, 5, 6]) ? $amount : 0;
         } else {
             if (in_array($transaction_type_id, [1, 4, 7])) {
                 if ($transactionDetail->account->account_group_id == 3) {

@@ -151,7 +151,7 @@ class TransactionController extends Controller
         $transactionDto->amount = $amount;
         $transactionDto->charge = $charge;
         foreach ($transaction->people as $key1 => $value1) {
-            $transactionDto->people[] = $value1->id;
+            $transactionDto->people[] = (string) $value1->id;
         }
         return $this->jsonResponse(message: 'Transaction fetched', data: ['transaction' => $transactionDto]);
     }
@@ -159,10 +159,11 @@ class TransactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(TransactionRequest $transactionRequest, Transaction $transaction)
+    public function update(TransactionRequest $transactionRequest, $transactionId)
     {
         DB::beginTransaction();
         try {
+            $transaction = Transaction::with('transactionDetails', 'transactionDetails.account')->find($transactionId);
             $transactionDate = isset($transactionRequest->transaction_date) ? $transactionRequest->transaction_date : $transaction->transaction_date;
             $transaction->description = $transactionRequest->description;
             $transaction->transaction_date = $transactionDate;
@@ -170,14 +171,25 @@ class TransactionController extends Controller
             $transaction->save();
             $transaction->people()->sync($transactionRequest->people);
             $amount = 0;
-            foreach ($transactionRequest->transactionDetails as $key => $value) {
-                $transactionDetail = TransactionDetail::find($value['id']);
-                $transactionDetail->transaction_date = $transactionDate;
-                $transactionDetail->debit = $value['debit'];
-                $transactionDetail->credit = $value['credit'];
-                $transactionDetail->save();
-                $this->accountService->recalculateBalance($transactionDetail);
-                $amount += $transactionDetail->debit;
+            foreach ($transaction->transactionDetails as $key => $value) {
+                $value->transaction_date = $transactionDate;
+                if ($value->account_id == auth()->user()->transfer_charge_account_id) {
+                    $this->accountService->getDebitCreditAmounts($value, $transactionRequest->charge, $transactionRequest->transaction_type_id);
+                } elseif ($value->account_id == $transactionRequest->wallet_id || $value->account->account_group_id == 3) {
+                    if ($value->account_id != $transactionRequest->wallet_id) {
+                        $value->account_id = $transactionRequest->wallet_id;
+                        $value->update();
+                    }
+                    $this->accountService->getDebitCreditAmounts($value, $transactionRequest->amount + $transactionRequest->charge, $transactionRequest->transaction_type_id);
+                } elseif ($value->account_id == $transactionRequest->account_id || $value->account->account_group_id != 3) {
+                    if ($value->account_id != $transactionRequest->account_id) {
+                        $value->account_id = $transactionRequest->account_id;
+                        $value->update();
+                    }
+                    $this->accountService->getDebitCreditAmounts($value, $transactionRequest->amount, $transactionRequest->transaction_type_id);
+                }
+                $this->accountService->recalculateBalance($value);
+                $amount += $value->debit;
             }
             $transaction->amount = $amount;
             $transaction->update();
