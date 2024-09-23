@@ -24,4 +24,5 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('transactions', TransactionController::class);
     Route::resource('locations', LocationController::class);
     Route::resource('people', PeopleController::class);
+    Route::get('people-select-list', [PeopleController::class, 'selectList']);
 });

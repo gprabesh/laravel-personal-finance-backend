@@ -18,6 +18,15 @@ class PeopleController extends Controller
     }
 
     /**
+     * Display a listing of the resource.
+     */
+    public function selectList()
+    {
+        $people = People::select('id as value', 'name as label')->get();
+        return $this->jsonResponse(data: ['people' => $people]);
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
